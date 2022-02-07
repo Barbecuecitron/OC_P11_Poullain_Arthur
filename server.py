@@ -1,15 +1,17 @@
 import json
 from flask import Flask,render_template,request,redirect,flash,url_for
-
+import os
+from datetime import datetime
+base_dir = f"{os.path.dirname(os.path.abspath(__file__))}/"
 
 def loadClubs():
-    with open('clubs.json') as c:
+    with open(f"{base_dir}clubs.json") as c:
          listOfClubs = json.load(c)['clubs']
          return listOfClubs
 
 
 def loadCompetitions():
-    with open('competitions.json') as comps:
+    with open(f"{base_dir}competitions.json") as comps:
          listOfCompetitions = json.load(comps)['competitions']
          return listOfCompetitions
 
@@ -26,8 +28,12 @@ def index():
 
 @app.route('/showSummary',methods=['POST'])
 def showSummary():
-    club = [club for club in clubs if club['email'] == request.form['email']][0]
-    return render_template('welcome.html',club=club,competitions=competitions)
+    try:
+        club = [club for club in clubs if club['email']
+            == request.form['email']][0]
+    except IndexError:
+        return redirect(url_for('index'))
+    return render_template('welcome.html', club=club, competitions=competitions)
 
 
 @app.route('/book/<competition>/<club>')
