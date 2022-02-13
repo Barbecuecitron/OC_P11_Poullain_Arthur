@@ -55,11 +55,11 @@ def purchasePlaces():
 
      # Can't buy 0 or negative n° of places
     if placesRequired < 1:
-        flash("The number of purchased places must be > 0")
+        flash("The number of purchased places must be positive")
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Club doesn't have enough points 
-    if int(club['points']) - placesRequired < 0:
+    if int(club['points']) == 0 or int(club['points']) - placesRequired < 0:
         flash("Your club doesn't have enough points !")
         return render_template('welcome.html', club=club, competitions=competitions)
 
@@ -68,6 +68,11 @@ def purchasePlaces():
         flash("There are not enough places in this competition !")
         return render_template('welcome.html', club=club, competitions=competitions)
 
+    # Let's retrieve points from the club & comp
+    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) -  int(placesRequired) 
+
+
+    club['points'] = int(club['points']) - int(placesRequired)
     flash(f"Great-booking complete! You purchased {placesRequired} places for the {competition['name']} !")
     return render_template('welcome.html', club=club, competitions=competitions)
 
