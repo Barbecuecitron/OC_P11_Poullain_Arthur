@@ -1,0 +1,26 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Points Display</title>
+  </head>
+  <body>
+    <table>
+      <a href="{{url_for('index')}}">Index</a>
+      <a href="{{url_for('points_display')}}">Clubs</a>
+      <h1>Clubs Points</h1>
+      <tr>
+        {% for header in headings %}
+        <th>{{ header }}</th>
+        {% endfor %}
+      </tr>
+      {% for row in data %}
+      <tr>
+        {% for cell in row %}
+        <td>{{cell}}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>

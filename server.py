@@ -2,6 +2,9 @@ import json
 from flask import Flask,render_template,request,redirect,flash,url_for
 import os
 from datetime import datetime
+from flask_table import Table, Col
+
+
 base_dir = f"{os.path.dirname(os.path.abspath(__file__))}/"
 
 def loadClubs():
@@ -136,3 +139,15 @@ def purchasePlaces():
 @app.route('/logout')
 def logout():
     return redirect(url_for('index'))
+
+
+@app.route('/points_display')
+def points_display():
+    headings = ("Club Name - ", "Points")
+    data = []
+    for club in loadClubs():
+        club_data = (club['name'], club['points'])
+        data.append(club_data)
+
+    return render_template('points_display.html', headings=headings, data=data)
+
