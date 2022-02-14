@@ -41,6 +41,12 @@ def serializeCompetition(comp_to_save):
         json.dump(data, f, indent=4)
         f.truncate()# remove remaining part
 
+def hasHappened(competition):
+    compet_date = competition['date'].split(" ")[0] # get rid of time data
+    year, month, day = compet_date.split("-")
+    if datetime(int(year),int(month),int(day)) < datetime.now():
+        return True
+
 app = Flask(__name__)
 app.secret_key = 'something_special'
 
@@ -91,6 +97,10 @@ def purchasePlaces():
      # Not enough places in the competition
     if int(competition['numberOfPlaces']) - placesRequired < 0:
         flash("There are not enough places in this competition !")
+        return render_template('welcome.html', club=club, competitions=competitions)
+
+    if hasHappened(competition):
+        flash("This competition already happened !")
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Do we have bookings for this comp yet ? Let's find out
