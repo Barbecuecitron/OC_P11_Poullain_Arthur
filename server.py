@@ -2,27 +2,27 @@ import json
 from flask import Flask,render_template,request,redirect,flash,url_for
 import os
 from datetime import datetime
-from flask_table import Table, Col
 
 
 base_dir = f"{os.path.dirname(os.path.abspath(__file__))}/"
 
-def loadClubs():
-    with open(f"{base_dir}clubs.json") as c:
+def loadClubs(file_path=f"{base_dir}clubs.json"):
+    with open(file_path) as c:
          listOfClubs = json.load(c)['clubs']
          return listOfClubs
 
 # load from json and add Reservations dict if doesn't exist
-def loadCompetitions():
-    with open(f"{base_dir}competitions.json") as comps:
+def loadCompetitions(file_path=f"{base_dir}competitions.json"):
+    with open(file_path) as comps:
         listOfCompetitions = json.load(comps)['competitions']
         for comp in listOfCompetitions:
             if not "Reservations" in comp:
                 comp['Reservations'] = {} 
         return listOfCompetitions
 
-def serializeClub(club_to_save):
-    with open('clubs.json', 'r+') as f:
+
+def serializeClub(club_to_save, filename="clubs.json"):
+    with open(filename, 'r+') as f:
         data = json.load(f)
         clubs = data['clubs']
         for club in clubs:
@@ -31,6 +31,7 @@ def serializeClub(club_to_save):
         f.seek(0)        # <--- should reset file position to the beginning.
         json.dump(data, f, indent=4)
         f.truncate()# remove remaining part
+
 
 def serializeCompetition(comp_to_save):
     with open('competitions.json', 'r+') as f:
@@ -43,6 +44,7 @@ def serializeCompetition(comp_to_save):
         f.seek(0)        # <--- should reset file position to the beginning.
         json.dump(data, f, indent=4)
         f.truncate()# remove remaining part
+
 
 def hasHappened(competition):
     compet_date = competition['date'].split(" ")[0] # get rid of time data
@@ -66,6 +68,7 @@ def showSummary():
         club = [club for club in clubs if club['email']
             == request.form['email']][0]
     except IndexError:
+        flash("This user doesn't exist !")
         return redirect(url_for('index'))
     return render_template('welcome.html', club=club, competitions=competitions)
 
@@ -83,6 +86,7 @@ def book(competition,club):
 
 @app.route('/purchasePlaces',methods=['POST'])
 def purchasePlaces():
+    points_per_place = 3
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
@@ -93,12 +97,12 @@ def purchasePlaces():
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Club doesn't have enough points 
-    if int(club['points']) == 0 or int(club['points']) - placesRequired < 0:
+    if int(club['points']) == 0 or int(club['points']) - placesRequired*points_per_place < 0:
         flash("Your club doesn't have enough points !")
         return render_template('welcome.html', club=club, competitions=competitions)
 
      # Not enough places in the competition
-    if int(competition['numberOfPlaces']) - placesRequired < 0:
+    if int(competition['numberOfPlaces']) - placesRequired*points_per_place < 0:
         flash("There are not enough places in this competition !")
         return render_template('welcome.html', club=club, competitions=competitions)
 
@@ -109,7 +113,7 @@ def purchasePlaces():
     # Do we have bookings for this comp yet ? Let's find out
     try:
         # Limit buyings to 12 per club
-        if competition["Reservations"][club["name"]] + placesRequired <= 12:
+        if competition["Reservations"][club["name"]] + placesRequired*points_per_place <= 12:
             competition["Reservations"][club["name"]] += placesRequired
         else:
             flash("You can't book more than 12 places per competition")
@@ -122,7 +126,7 @@ def purchasePlaces():
         
 
      # Update club points
-    club['points'] = int(club['points']) - placesRequired
+    club['points'] = int(club['points']) - placesRequired*points_per_place
     serializeClub(club)
 
     # Update competition points
@@ -130,7 +134,7 @@ def purchasePlaces():
         competition['numberOfPlaces']) - placesRequired
     serializeCompetition(competition)
 
-    flash(f"Great-booking complete! You purchased {placesRequired} places for the {competition['name']} !")
+    flash(f"Great-booking complete! You purchased {placesRequired*points_per_place} places for the {competition['name']} !")
     return render_template('welcome.html', club=club, competitions=competitions)
 
 # TODO: Add route for points display
