@@ -2,7 +2,7 @@ import json
 from flask import Flask,render_template,request,redirect,flash,url_for
 import os
 from datetime import datetime
-from flask_table import Table, Col
+# from flask_table import Table, Col
 
 
 base_dir = f"{os.path.dirname(os.path.abspath(__file__))}/"
@@ -85,7 +85,8 @@ def book(competition,club):
 def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
-    placesRequired = int(request.form['places'])
+    points_per_place = 3
+    placesRequired = int(request.form['places']) * points_per_place
 
      # Can't buy 0 or negative n° of places
     if placesRequired < 1:
