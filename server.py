@@ -2,7 +2,7 @@ import json
 from flask import Flask,render_template,request,redirect,flash,url_for
 import os
 from datetime import datetime
-from flask_table import Table, Col
+# from flask_table import Table, Col
 
 
 base_dir = f"{os.path.dirname(os.path.abspath(__file__))}/"
